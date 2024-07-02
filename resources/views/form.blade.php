@@ -18,8 +18,12 @@
 
     <form action="/form" method="POST">
         @csrf
-        <label>Username : <input type="text" name="username"></label> <br>
-        <label>Password : <input type="password" name="password"></label> <br>
+        <label>Username : @error('username')
+                {{ $message }}
+            @enderror <input type="text" name="username" value="{{ old('username') }}"></label> <br>
+        <label>Password : @error('password')
+                {{ $message }}
+            @enderror <input type="password" name="password" value="{{ old('password') }}"></label> <br>
         <input type="submit" value="Login">
     </form>
 </body>
