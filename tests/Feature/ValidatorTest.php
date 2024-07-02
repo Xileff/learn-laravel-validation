@@ -9,6 +9,8 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\In;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator as ValidationValidator;
 use Tests\TestCase;
@@ -211,6 +213,28 @@ class ValidatorTest extends TestCase
         Log::info($message->toJson(JSON_PRETTY_PRINT));
     }
 
+    public function testValidatorRuleClasses()
+    {
+        $data = [
+            'username' => 'felix@email.com',
+            'password' => 'felix@email.com'
+        ];
+
+        $rules = [
+            'username' => ['required', new In('Felix', 'Xilef', 'GitHub')],
+            'password' => ['required', Password::min(6)->letters()->numbers()->symbols()]
+        ];
+
+        $validator = Validator::make($data, $rules);
+
+        $this->assertNotNull($validator);
+
+        $this->assertFalse($validator->passes());
+        $this->assertTrue($validator->fails());
+
+        $message = $validator->getMessageBag();
+        Log::info($message->toJson(JSON_PRETTY_PRINT));
+    }
     public function testValidatorCustomFunctionRule()
     {
         $data = [
