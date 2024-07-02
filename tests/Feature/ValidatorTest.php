@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Validator as ValidationValidator;
 use Tests\TestCase;
 
 class ValidatorTest extends TestCase
@@ -148,6 +149,34 @@ class ValidatorTest extends TestCase
         ];
 
         $validator = Validator::make($data, $rules, $messages);
+        $this->assertNotNull($validator);
+
+        $this->assertFalse($validator->passes());
+        $this->assertTrue($validator->fails());
+
+        $message = $validator->getMessageBag();
+        Log::info($message->toJson(JSON_PRETTY_PRINT));
+    }
+
+    public function testValidatorAdditionalValidation()
+    {
+        $data = [
+            'username' => 'felix@email.com',
+            'password' => 'felix@email.com'
+        ];
+
+        $rules = [
+            'username' => 'required|email|max:100',
+            'password' => ['required', 'min:6', 'max:20']
+        ];
+
+        $validator = Validator::make($data, $rules);
+        $validator->after(function (\Illuminate\Validation\Validator $vld) {
+            $data = $vld->getData();
+            if ($data['username'] === $data['password']) {
+                $vld->errors()->add("password", "Password tidak boleh sama dengan username");
+            }
+        });
         $this->assertNotNull($validator);
 
         $this->assertFalse($validator->passes());
